@@ -5,10 +5,12 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.web
     hostname: web
+    command: yarn workspace @certificates/web prod
+    restart: always
     env_file:
       - .env
     ports:
-      - '${WEB_PORT}:${WEB_PORT}'
+      - 3000:3000
     networks:
       - frontend
   gateway:
@@ -16,10 +18,12 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.gateway
     hostname: gateway
+    command: yarn workspace @certificates/gateway prod
+    restart: always
     env_file:
       - .env
     ports:
-      - '${API_GATEWAY_PORT}:${API_GATEWAY_PORT}'
+      - 3001:3001
     networks:
       - backend
       - frontend
@@ -28,6 +32,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.event
     hostname: event
+    command: yarn workspace @certificates/event prod
+    restart: always
     env_file:
       - .env
     links:
@@ -39,6 +45,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.generic
     hostname: generic
+    command: yarn workspace @certificates/generic prod
+    restart: always
     env_file:
       - .env
     links:
@@ -50,6 +58,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.token
     hostname: token
+    command: yarn workspace @certificates/token prod
+    restart: always
     env_file:
       - .env
     links:
@@ -61,6 +71,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.mailer
     hostname: mailer
+    command: yarn workspace @certificates/mailer prod
+    restart: always
     env_file:
       - .env
     links:
@@ -72,6 +84,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.permission
     hostname: permission
+    command: yarn workspace @certificates/permission prod
+    restart: always
     env_file:
       - .env
     networks:
@@ -81,6 +95,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.user
     hostname: user
+    command: yarn workspace @certificates/user prod
+    restart: always
     env_file:
       - .env
     networks:
@@ -93,14 +109,15 @@ services:
       - './docker/db:/bitnami/mongodb'
   db:
     image: 'bitnami/mongodb:latest'
+    restart: always
     environment:
-      - 'MONGODB_USERNAME=${MONGO_USER}'
-      - 'MONGODB_PASSWORD=${MONGO_PASSWORD}'
-      - 'MONGODB_DATABASE=${MONGO_DATABASE}'
+      - MONGODB_USERNAME=mongo
+      - MONGODB_PASSWORD=pass
+      - MONGODB_DATABASE=certificates
     volumes:
       - './docker/db:/bitnami/mongodb'
     ports:
-      - '${MONGO_PORT}:27017'
+      - 27017:27017
     depends_on:
       - fix-db-permissions
     networks:
@@ -110,16 +127,16 @@ services:
     image: mongo-express
     restart: always
     ports:
-      - '${MONGO_GUI_PORT}:8081'
+      - 4000:8081
     environment:
-      - 'ME_CONFIG_BASICAUTH_USERNAME=${MONGO_GUI_USER}'
-      - 'ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_GUI_PASSWORD}'
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=false
-      - 'ME_CONFIG_MONGODB_SERVER=${MONGO_HOST}'
-      - 'ME_CONFIG_MONGODB_PORT=${MONGO_PORT}'
-      - 'ME_CONFIG_MONGODB_AUTH_DATABASE=${MONGO_DATABASE}'
-      - 'ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_USER}'
-      - 'ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_PASSWORD}'
+      - ME_CONFIG_MONGODB_SERVER=db
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_AUTH_DATABASE=certificates
+      - ME_CONFIG_MONGODB_AUTH_USERNAME=mongo
+      - ME_CONFIG_MONGODB_AUTH_PASSWORD=pass
     links:
       - db
     networks:
